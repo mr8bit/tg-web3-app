@@ -1,0 +1,29 @@
+# Dockerfile для разработки Python бота
+FROM python:3.11-slim
+
+# Устанавливаем рабочую директорию
+WORKDIR /app
+
+# Устанавливаем системные зависимости
+RUN apt-get update && apt-get install -y \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Копируем файл зависимостей
+COPY requirements.txt .
+
+# Устанавливаем зависимости Python
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Устанавливаем watchdog для автоперезагрузки
+RUN pip install watchdog
+
+# Копируем исходный код
+COPY . .
+
+# Создаем пользователя для безопасности
+RUN useradd -m -u 1000 botuser && chown -R botuser:botuser /app
+USER botuser
+
+# Команда запуска с автоперезагрузкой
+CMD ["python", "-u", "bot.py"]

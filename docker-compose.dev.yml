@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # Next.js веб-приложение (режим разработки)
+  fighter-web:
+    build:
+      context: ./fighter-web
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+    env_file:
+      - .env
+    volumes:
+      - ./fighter-web:/app
+      - /app/node_modules
+    restart: unless-stopped
+    networks:
+      - fighter-network
+
+  # Python Telegram бот (режим разработки)
+  fighter-bot:
+    build:
+      context: ./fighter-bot-python
+      dockerfile: Dockerfile.dev
+    environment:
+      - WEB_APP_URL=http://localhost:3000
+    env_file:
+      - .env
+    volumes:
+      - ./fighter-bot-python:/app
+    restart: unless-stopped
+    depends_on:
+      - fighter-web
+    networks:
+      - fighter-network
+
+networks:
+  fighter-network:
+    driver: bridge
